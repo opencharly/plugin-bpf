@@ -44,16 +44,22 @@ func (p provider) invokeVerb(ctx context.Context, req *pb.InvokeRequest) (*pb.In
 	kit.DecodeInput(op.PluginInput, &in)
 
 	method := "status"
-	var out string
+	if in.Lsm {
+		method = "lsm"
+	}
+	return sdk.VerbVerdict("bpf", method, verbReply(in), nil, &op, false)
+}
+
+// verbReply is the TESTED dispatch surface: it renders the report for a decoded
+// bpf plugin_input (lsm gate or status report). invokeVerb's per-verb branch -
+// the code that would fail without the verb path - is exactly this function.
+func verbReply(in params.BpfInput) string {
 	switch {
 	case in.Lsm:
-		method = "lsm"
-		out = lsmReportText()
+		return lsmReportText()
 	case in.Status != nil:
-		method = "status"
-		out = renderStatusText(collectStatus(), false)
+		return renderStatusText(collectStatus(), false)
 	default:
-		out = renderStatusText(collectStatus(), false)
+		return renderStatusText(collectStatus(), false)
 	}
-	return sdk.VerbVerdict("bpf", method, out, nil, &op, false)
 }

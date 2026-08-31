@@ -82,8 +82,11 @@ func readFile(path string) (string, bool) {
 	return strings.TrimSpace(string(b)), true
 }
 
+// lsmFile is overridable in tests (hermetic verb dispatch tests).
+var lsmFile = lsmPath
+
 func readLsm() []string {
-	c, ok := readFile(lsmPath)
+	c, ok := readFile(lsmFile)
 	if !ok {
 		return nil
 	}
