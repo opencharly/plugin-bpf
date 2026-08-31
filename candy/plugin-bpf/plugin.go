@@ -43,7 +43,7 @@ func NewProvider() pb.ProviderServer { return &provider{} }
 func NewMeta() pb.PluginMetaServer {
 	return sdk.NewMeta("2026.243.0001",
 		[]sdk.ProvidedCapability{
-			{Class: "verb", Word: "bpf", InputDef: "#BpfInput"},
+			{Class: "verb", Word: "bpf", InputDef: "#BpfInput", Primary: "lsm"},
 		},
 		schemaFS)
 }
