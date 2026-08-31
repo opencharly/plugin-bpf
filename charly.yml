@@ -1,0 +1,10 @@
+version: 2026.232.0520
+plugin-bpf:
+    candy:
+        version: 2026.243.0001
+        description: GENERIC charly BPF/eBPF kernel plugin — command:bpf (status/lsm/config/probe) + verb:bpf check steps; read-only kernel BPF readiness facts (LSM gate, BTF, config), the single canonical surface for BPF kernel-feature assertions.
+        plugin:
+            source: github.com/opencharly/plugin-bpf/candy/plugin-bpf
+            providers:
+                - command:bpf
+                - verb:bpf
