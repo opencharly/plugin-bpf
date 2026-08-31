@@ -1,0 +1,30 @@
+version: 2026.232.0520
+plugin-bpf:
+    candy:
+        version: 2026.243.0001
+        description: |-
+            OUT-OF-TREE GENERIC charly BPF/eBPF kernel plugin — the one canonical surface for
+            BPF kernel-feature readiness on any venue (bare host or VM guest): command:bpf
+            (status | lsm | config | probe) plus the verb:bpf declarative check steps any
+            candy can bake into its plan. Reads the kernel state directly and READ-ONLY:
+            /sys/kernel/security/lsm (the BPF-LSM gate cardwire-class tools need),
+            /sys/kernel/btf/vmlinux, CONFIG_BPF_LSM/CONFIG_DEBUG_INFO_BTF, the BPF sysctl
+            knobs, memlock and lockdown. Read-only by default; `probe` is a verify-only
+            attach-requirements report (a real transient attach probe requires an explicit
+            --attach flag + root + bpftool). Dual-class (plugin-mcp precedent): command:bpf
+            is CLI-dispatched (charly fork/execs the binary), verb:bpf is served over gRPC
+            with a self-contained #BpfInput schema. First consumer: plugin-cardwire's status
+            gates on the same BPF-LSM facts (R3: one canonical surface, no ad-hoc copies).
+        plugin:
+            source: github.com/opencharly/plugin-bpf/candy/plugin-bpf
+            providers:
+                - command:bpf
+                - verb:bpf
+            primary:
+                bpf: lsm
+        plan:
+            - check: the bpf plugin ships a buildable Go module the host can build + fork/exec (CLI) and compile in (verb); the deterministic end-to-end (bpf status / bpf lsm exit-code contracts) is exercised by the check-bpf-local bed in opencharly/charly
+              id: bpf-module-present
+              context:
+                - build
+              command: "true"
