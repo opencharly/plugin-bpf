@@ -20,6 +20,8 @@ plugin-bpf:
             providers:
                 - command:bpf
                 - verb:bpf
+            primary:
+                bpf: lsm
         plan:
             - check: the bpf plugin ships a buildable Go module the host can build + fork/exec (CLI) and compile in (verb); the deterministic end-to-end (bpf status / bpf lsm exit-code contracts) is exercised by the check-bpf-local bed in opencharly/charly
               id: bpf-module-present
