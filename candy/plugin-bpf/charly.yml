@@ -66,5 +66,4 @@ bpf-skill:
 
             ## Cross-References
 
-            - `/charly-cardwire:cardwire` — the cardwire GPU-manager surface (same LSM reads).
             - `/charly-internals:plugin` — the command/verb plugin class.
