@@ -1,3 +1,8 @@
+bpf
+/candy/plugin-bpf/bpf
+pr-body.md
+pr-body.md
+
 # Generated build artifacts (recreated by `charly box generate` / `charly box build`)
 .build/
 # Generated context-ignore files (podman reads .containerignore, docker .dockerignore)
