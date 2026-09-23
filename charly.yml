@@ -3,8 +3,51 @@
 # so `charly box validate` at the repo root exits 0 on ANY manifest, including one with
 # a malformed `plugin.providers` entry. See opencharly/charly#459.
 #
-# This file declares no entities of its own - it only tells charly where to look.
-version: 2026.240.1943
+# This file also declares the R10 witness bed (below).
+version: 2026.249.2125
 discover:
     - path: candy
       recursive: true
+
+check-bpf-local-app:
+    local:
+        description: >-
+            Minimal kind:local template for the check-bpf-local R10 witness bed - composes the OUT-OF-TREE plugin-bpf candy (command:bpf + verb:bpf) so the bed exercises the external plugin dispatch host-side: charly builds the plugin binary and (a) fork/execs it in CLI mode for command:bpf (check e2e-bpf-status / e2e-bpf-lsm-gate) and (b) resolves verb:bpf through the provider registry for the declarative bpf: gate step (check e2e-bpf-verb). Mirrors check-udev-local (plugin-udev's R10 witness).
+        candy:
+            - plugin-bpf
+check-bpf-local:
+    local:
+        from: check-bpf-local-app
+        host: local
+        disposable: true
+        description: >-
+            R10 witness for the plugin-bpf COMMAND + VERB dispatch on the reference CachyOS host (bpf LSM active): command:bpf status exits 0 with the deterministic header, command:bpf lsm exits 0 with 'BPF LSM: enabled' (the gate contract), and the declarative bpf: lsm check step (verb:bpf) passes host-side through the provider registry. Host-independent steps keep the bed runnable anywhere; the enabled-gate assertion is the reference-host tier (a host without bpf LSM reports DISABLED + exit 1 - the contract under test).
+        plan:
+            - check: command=bpf status exits 0 and prints the deterministic report header (CLI dispatch, read-only)
+              id: e2e-bpf-status
+              exit_status: 0
+              stdout:
+                - contains: BPF kernel feature report
+              context:
+                - runtime
+              command:
+                command: ${CHARLY_BIN} bpf status
+                in_container: false
+            - check: command=bpf lsm exits 0 and reports the gate enabled on the reference host (CLI gate contract)
+              id: e2e-bpf-lsm-gate
+              exit_status: 0
+              stdout:
+                - contains: 'BPF LSM: enabled'
+              context:
+                - runtime
+              command:
+                command: ${CHARLY_BIN} bpf lsm
+                in_container: false
+            - check: the bpf verb gate passes host-side through the provider registry (verb:bpf dispatch)
+              id: e2e-bpf-verb
+              bpf:
+                lsm: true
+              context:
+                - runtime
+              stdout:
+                - contains: enabled
