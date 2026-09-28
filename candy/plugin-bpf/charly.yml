@@ -1,7 +1,5 @@
-version: 2026.240.1943
 plugin-bpf:
     candy:
-        version: 2026.243.0001
         description: |-
             OUT-OF-TREE GENERIC charly BPF/eBPF kernel plugin — the one canonical surface for
             BPF kernel-feature readiness on any venue (bare host or VM guest): command:bpf
