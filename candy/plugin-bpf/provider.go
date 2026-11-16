@@ -53,13 +53,19 @@ func (p provider) invokeVerb(ctx context.Context, req *pb.InvokeRequest) (*pb.In
 // verbReply is the TESTED dispatch surface: it renders the report for a decoded
 // bpf plugin_input (lsm gate or status report). invokeVerb's per-verb branch -
 // the code that would fail without the verb path - is exactly this function.
+//
+// The ONE selector is the lsm gate. The status matcher form carries the readiness
+// facts an authored `bpf: {status: …}` step documents, but it never chose a
+// different report: both of the old switch arms rendered the SAME readiness text.
+// Nor is there a presence signal left to test — the params generator emits
+// `status` as a VALUE struct (the schema's inline block, no named type, no
+// pointer), so `!= nil` is unrepresentable there, and an all-false block is
+// indistinguishable from an absent one. The status form therefore takes the
+// readiness report, exactly like an input-less step, and the step's own matchers
+// decide pass/fail from that text.
 func verbReply(in params.BpfInput) string {
-	switch {
-	case in.Lsm:
+	if in.Lsm {
 		return lsmReportText()
-	case in.Status != nil:
-		return renderStatusText(collectStatus(), false)
-	default:
-		return renderStatusText(collectStatus(), false)
 	}
+	return renderStatusText(collectStatus(), false)
 }

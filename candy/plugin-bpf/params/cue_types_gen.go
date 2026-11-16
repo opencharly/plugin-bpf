@@ -7,33 +7,31 @@ package params
 // used two ways:
 //
 //  1. GENERATE the Go param struct — `cue exp gengotypes` (driven by the cue:gen
-//     pipeline) emits this file, so the provider decodes plugin_input into a
+//     pipeline, which wraps this with `package params` + `@go(params)`) emits
+//     ../params/cue_types_gen.go, so the provider decodes plugin_input into a
 //     TYPED struct, never a hand-parsed map.
-//  2. VALIDATE authored input AT RUNTIME — the plugin serves the schema source over
-//     the Describe channel; the host splices it onto the base and validates every
-//     authored `bpf:` step's plugin_input against #BpfInput.
+//  2. VALIDATE authored input AT RUNTIME — the plugin serves this source over the
+//     Describe channel; the host splices it onto the base (base ++ plugin) and
+//     validates every authored `bpf:` step's plugin_input against #BpfInput.
 //
-// SELF-CONTAINED: it references NO base def, so it compiles standalone AND splices
-// onto the base.
+// SELF-CONTAINED: it references NO base def, so it compiles standalone
+// (gengotypes + the load-gate compile) AND splices onto the base (base ++ plugin
+// is a def-name collision check, not a base-reference resolver).
 type BpfInput struct {
-	// lsm — the scalar-sugar primary: assert bpf is in the active LSM list
-	// (`bpf: lsm`). The step's own matchers decide pass/fail (stdout contains
-	// "enabled", or exit_status 0).
+	// lsm — the scalar-sugar primary: assert bpf is in the active LSM list.
+	// The step's own matchers decide pass/fail (e.g. stdout contains "enabled",
+	// or exit_status 0).
 	Lsm bool `yaml:"lsm,omitempty" json:"lsm,omitempty"`
 
 	// status — matcher form over the readiness facts.
-	Status *BpfStatusInput `yaml:"status,omitempty" json:"status,omitempty"`
-}
+	Status struct {
+		// lsm_bpf — is bpf in the active LSM list.
+		LSMHasBPF bool `yaml:"lsm_bpf,omitempty" json:"lsm_bpf,omitempty"`
 
-// BpfStatusInput carries the status facts an authored `bpf: {status: …}` step can
-// assert on. Absent fields are zero-valued.
-type BpfStatusInput struct {
-	// lsm_bpf — is bpf in the active LSM list.
-	LSMHasBPF bool `yaml:"lsm_bpf,omitempty" json:"lsm_bpf,omitempty"`
+		// btf_present — does /sys/kernel/btf/vmlinux exist.
+		BTFPresent bool `yaml:"btf_present,omitempty" json:"btf_present,omitempty"`
 
-	// btf_present — does /sys/kernel/btf/vmlinux exist.
-	BTFPresent bool `yaml:"btf_present,omitempty" json:"btf_present,omitempty"`
-
-	// config_bpf_lsm — is CONFIG_BPF_LSM=y.
-	ConfigBPFLSM bool `yaml:"config_bpf_lsm,omitempty" json:"config_bpf_lsm,omitempty"`
+		// config_bpf_lsm — is CONFIG_BPF_LSM=y.
+		ConfigBPFLSM bool `yaml:"config_bpf_lsm,omitempty" json:"config_bpf_lsm,omitempty"`
+	} `yaml:"status,omitempty" json:"status,omitempty"`
 }

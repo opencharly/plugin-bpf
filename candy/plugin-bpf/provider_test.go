@@ -46,7 +46,10 @@ func TestVerbDispatch_LsmGateDisabled(t *testing.T) {
 
 func TestVerbDispatch_StatusReport(t *testing.T) {
 	writeLsm(t, "capability,landlock,lockdown,yama,bpf")
-	out := verbReply(params.BpfInput{Status: &params.BpfStatusInput{}})
+	// The status matcher form is a VALUE struct in the generated params (no named
+	// type, no pointer), so a zero BpfInput IS the status form: the block's fields
+	// document what a step may assert, and the report is the same readiness text.
+	out := verbReply(params.BpfInput{})
 	for _, k := range []string{"BPF kernel feature report", "lsm list", "bpf LSM", "BTF vmlinux"} {
 		if !strings.Contains(out, k) {
 			t.Fatalf("verb status report missing %q: %s", k, out)
